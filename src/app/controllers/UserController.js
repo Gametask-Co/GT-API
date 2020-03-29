@@ -47,7 +47,7 @@ class UserController {
             }
         }
 
-        return res.status(406).send({
+        return res.status(400).send({
             message: 'User already exists!'
         });
     }

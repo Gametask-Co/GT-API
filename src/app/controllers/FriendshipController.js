@@ -18,18 +18,8 @@ function setFriend(f1, f2) {
 }
 
 function checkFriendship(f1, f2) {
-    let f1_flag = false,
-        f2_flag = false;
-
-    Object.keys(f1.friend_list).forEach(function(key) {
-        if (f1.friend_list[key].friend_id == f2._id) f1_flag = true;
-    });
-
-    Object.keys(f2.friend_list).forEach(function(key) {
-        if (f2.friend_list[key].friend_id == f1._id) f2_flag = true;
-    });
-
-    return f1_flag && f2_flag;
+    const flag = f1.friend_list.filter(friend => friend.friend_id == f2._id);
+    return !(flag.length < 1);
 }
 
 class FriendshipController {
@@ -43,7 +33,7 @@ class FriendshipController {
 
         const friend = await User.findById(req.body.id);
 
-        if (!friend) return res.status(400).send({ message: 'Friend not found' });
+        if (!friend) return res.status(400).send({ message: 'User not found' });
 
         const user = await User.findById(req.user_id);
         const { f1, f2 } = setFriend(user, friend);
@@ -71,7 +61,7 @@ class FriendshipController {
 
         const friend = await User.findById(req.body.id);
 
-        if (!friend) return res.status(400).send({ message: 'Friend not found' });
+        if (!friend) return res.status(400).send({ message: 'User not found' });
 
         const user = await User.findById(req.user_id);
         let { friend_list } = user;

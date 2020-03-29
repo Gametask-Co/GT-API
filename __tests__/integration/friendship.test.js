@@ -31,7 +31,7 @@ describe('User', () => {
         expect(response.body).toEqual({ message: 'Validation error' });
     });
 
-    it('should give friend not found', async () => {
+    it('should give User not found', async () => {
         const user1 = await request(app)
             .post('/user')
             .send({
@@ -48,7 +48,7 @@ describe('User', () => {
                 id: '5e533d45b8511c3e7aefa666'
             });
 
-        expect(response.body).toEqual({ message: 'Friend not found' });
+        expect(response.body).toEqual({ message: 'User not found' });
     });
 
     it('should create friend1, friend2 and add them to friendlist', async () => {
@@ -185,7 +185,7 @@ describe('User', () => {
         expect(response.body).toEqual({ message: 'Validation error' });
     });
 
-    it('should receive friend not found while deleting', async () => {
+    it('should receive User not found while deleting', async () => {
         const user1 = await request(app)
             .post('/user/auth')
             .send({
@@ -200,7 +200,7 @@ describe('User', () => {
                 id: '5e533d45b8511c3e7aefa666'
             });
 
-        expect(response.body).toEqual({ message: 'Friend not found' });
+        expect(response.body).toEqual({ message: 'User not found' });
     });
 
     it('should receive not friends while deleting', async () => {
