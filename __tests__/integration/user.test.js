@@ -19,7 +19,7 @@ describe('User', () => {
                 name: 'test gametask',
                 email: 'gametask@gametask.com',
                 birthday: '12/29/2050',
-                password_hash: 'test123'
+                password: 'test123'
             });
 
         expect(response.body).toEqual({ message: 'Invalid birthday' });
@@ -32,7 +32,7 @@ describe('User', () => {
                 name: 'test gametask',
                 email: 'gametask@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'test123'
+                password: 'test123'
             });
 
         expect(response.body).toHaveProperty('token');
@@ -56,7 +56,7 @@ describe('User', () => {
                 name: 'test gametask',
                 email: 'gametask@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'test123'
+                password: 'test123'
             });
 
         expect(response.body).toEqual({ message: 'User already exists!' });
@@ -109,7 +109,7 @@ describe('User', () => {
                 name: 'test gametask',
                 email: 'newgametask@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'test123'
+                password: 'test123'
             });
 
         const auth_response = await request(app)

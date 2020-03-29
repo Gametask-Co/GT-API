@@ -9,7 +9,7 @@ describe('Task', () => {
                 name: 'Task Test',
                 email: 'tasktest@gametask.com',
                 birthday: '10/09/2005',
-                password_hash: 'taskaccount'
+                password: 'taskaccount'
             });
 
         const response = await request(app)
@@ -21,12 +21,7 @@ describe('Task', () => {
                 due_date: '01/01/2005'
             });
 
-        expect(response.body).toHaveProperty(
-            'name',
-            'description',
-            'user_id',
-            'createdAt'
-        );
+        expect(response.body).toHaveProperty('name', 'description', 'user_id', 'createdAt');
     });
 
     it('should receive validation error', async () => {
@@ -46,7 +41,7 @@ describe('Task', () => {
 
         expect(response.body).toEqual({ message: 'Validation error' });
     });
-    
+
     it('should receive single task', async () => {
         const user = await request(app)
             .post('/user/auth')
@@ -68,7 +63,7 @@ describe('Task', () => {
             .get('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
-                task_id: task.body._id 
+                task_id: task.body._id
             });
 
         expect(task_new.body._id).toEqual(task.body._id);
@@ -92,7 +87,7 @@ describe('Task', () => {
                 description: 'Task Description Example',
                 due_date: '01/01/2005'
             });
-        
+
         const r_user = await request(app)
             .get('/user/')
             .set('Authorization', 'Bearer ' + user.body.token);
@@ -107,16 +102,14 @@ describe('Task', () => {
             .send({
                 task_id: task_id
             });
-        
+
         let response = await request(app)
             .get('/user/')
             .set('Authorization', 'Bearer ' + user.body.token);
 
         let task_list_new = response.body.user.tasks;
-       
-        expect(
-            task_list.length > task_list_new.length ? true : false
-        ).toBeTruthy();
+
+        expect(task_list.length > task_list_new.length ? true : false).toBeTruthy();
         expect(task_list_new.includes(task_id)).toBeFalsy;
     });
 
@@ -172,7 +165,7 @@ describe('Task', () => {
                 description: 'Test update task',
                 due_date: '10/10/2025'
             });
-        
+
         const response = await request(app)
             .put('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
@@ -199,7 +192,7 @@ describe('Task', () => {
                 description: 'Test update task',
                 due_date: '10/10/2025'
             });
-        
+
         await request(app)
             .delete('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
@@ -213,7 +206,7 @@ describe('Task', () => {
             .send({
                 _id: old_task.body._id,
                 name: 'New name',
-                description: 'New description',
+                description: 'New description'
             });
 
         expect(response.body).toEqual({ message: 'Task not found' });
@@ -242,9 +235,9 @@ describe('Task', () => {
             .send({
                 _id: old_task.body._id,
                 name: 'New name',
-                description: 'New description',
+                description: 'New description'
             });
-        
+
         expect(response.body.name).toEqual('New name');
         expect(response.body.description).toEqual('New description');
     });

@@ -21,16 +21,14 @@ class UserController {
                 .email()
                 .required(),
             birthday: Yup.date().required(),
-            password_hash: Yup.string()
+            password: Yup.string()
                 .required()
                 .min(6)
         });
 
-        if (!(await schema.isValid(req.body)))
-            return res.status(400).send({ message: 'Validation error' });
+        if (!(await schema.isValid(req.body))) return res.status(400).send({ message: 'Validation error' });
 
-        if (new Date(req.body.birthday) >= Date.now())
-            return res.status(400).send({ message: 'Invalid birthday' });
+        if (new Date(req.body.birthday) >= Date.now()) return res.status(400).send({ message: 'Invalid birthday' });
 
         const { email } = req.body;
         const userExists = await User.findOne({ email });
@@ -38,42 +36,39 @@ class UserController {
         if (!userExists) {
             try {
                 const user = await User.create(req.body);
-                user.password_hash = undefined;
+                user.password = undefined;
 
                 return res.send({
                     user,
                     token: generateToken({ id: user.id })
                 });
             } catch (err) {
-                return res
-                    .status(400)
-                    .send({ message: 'Account creating error' });
+                return res.status(500).send({ message: 'Account creating error' });
             }
         }
 
-        return res.status(400).send({
+        return res.status(406).send({
             message: 'User already exists!'
         });
     }
 
     async index(req, res) {
-        const user = await User.findById(req.userId);
+        const user = await User.findById(req.user_id);
         return res.send({ user });
     }
 
     async update(req, res) {
-        const user = await User.findById(req.userId).select('+password_hash');
+        const user = await User.findById(req.user_id).select('+password');
 
         const { email, oldPassword } = req.body;
 
         if (email != user.email) {
             const userExists = await User.findOne({ email });
 
-            if (userExists)
-                return res.status(400).send({ message: 'Email already taken' });
+            if (userExists) return res.status(400).send({ message: 'Email already taken' });
         }
 
-        if (oldPassword && !(await bcrypt.compare(oldPassword, user.password_hash)))
+        if (oldPassword && !(await bcrypt.compare(oldPassword, user.password)))
             return res.status(401).send({ message: 'Password does not match' });
 
         const { id, name } = await user.updateOne(req.body);
@@ -86,15 +81,15 @@ class UserController {
     }
 
     async delete(req, res) {
-        const user = await User.findById(req.userId);
+        const user = await User.findById(req.user_id);
 
         if (!user) return res.status(400).send({ message: 'User not found' });
 
         try {
-            user.delete();
+            await user.delete();
             return res.send({ message: 'Delete successfully' });
         } catch (err) {
-            return res.send({ message: 'Error while deleting' });
+            return res.status(500).send({ message: 'Error while deleting' });
         }
     }
 
@@ -106,21 +101,17 @@ class UserController {
             password: Yup.string().required()
         });
 
-        if (!(await schema.isValid(req.body))) {
-            return res.status(400).send({ message: 'Validation error' });
-        }
+        if (!(await schema.isValid(req.body))) return res.status(400).send({ message: 'Validation error' });
 
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email }).select('+password_hash');
+        const user = await User.findOne({ email }).select('+password');
 
-        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-            return res
-                .status(400)
-                .send({ message: 'User not found or Invalid password' });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).send({ message: 'User not found or Invalid password' });
         }
 
-        user.password_hash = undefined;
+        user.password = undefined;
 
         res.send({
             user,

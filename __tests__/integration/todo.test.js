@@ -2,7 +2,6 @@ import request from 'supertest';
 import app from '../../src/app';
 
 describe('Todo', () => {
-
     it('should receive validation error', async () => {
         const user = await request(app)
             .post('/user/')
@@ -10,9 +9,9 @@ describe('Todo', () => {
                 name: 'Test Todo',
                 email: 'testtodo@gametask.com',
                 birthday: '10/29/1995',
-                password_hash: 'testtodo'
+                password: 'testtodo'
             });
-        
+
         const task = await request(app)
             .post('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
@@ -50,7 +49,7 @@ describe('Todo', () => {
                 description: 'Task Description Example',
                 due_date: '01/01/2025'
             });
-        
+
         const task_id = task.body._id;
 
         const response = await request(app)
@@ -61,18 +60,18 @@ describe('Todo', () => {
                 name: 'Test Todo 1',
                 description: 'Test Todo Describe Example'
             });
-        
+
         const task_new = await request(app)
             .get('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
-                task_id: task_id          
-            });       
+                task_id: task_id
+            });
 
         expect(response.body).toHaveProperty('_id', 'name', 'description');
         expect(task_new.body.todo_list.includes(response.body._id)).toBeTruthy();
     });
-    
+
     it('should receive single todo', async () => {
         const user = await request(app)
             .post('/user/auth')
@@ -89,7 +88,7 @@ describe('Todo', () => {
                 description: 'Task Description Example',
                 due_date: '01/01/2025'
             });
-        
+
         const task_id = task.body._id;
 
         const todo = await request(app)
@@ -127,7 +126,7 @@ describe('Todo', () => {
                 description: 'task description example',
                 due_date: '01/01/2025'
             });
-        
+
         const task_id = task.body._id;
 
         const todo = await request(app)
@@ -139,7 +138,7 @@ describe('Todo', () => {
                 description: 'test todo describe example'
             });
 
-         const response = await request(app)
+        const response = await request(app)
             .get('/todo/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
@@ -199,5 +198,5 @@ describe('Todo', () => {
 
         expect(response.body).toEqual({ message: 'Successfully delete' });
         expect(not_found.body).toEqual({ message: 'Todo not found' });
-    };*/  
+    };*/
 });
