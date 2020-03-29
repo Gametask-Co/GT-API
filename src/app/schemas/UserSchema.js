@@ -17,13 +17,13 @@ const UserSchema = new Schema({
         require: true
     },
 
-    password_hash: {
+    password: {
         type: String,
         required: true,
         select: false
     },
-    
-    exp : {
+
+    exp: {
         type: Number,
         required: true,
         default: 0
@@ -49,8 +49,8 @@ const UserSchema = new Schema({
 });
 
 UserSchema.pre('save', async function(next) {
-    const hash = await bcrypt.hash(this.password_hash, 10);
-    this.password_hash = hash;
+    const hash = await bcrypt.hash(this.password, 10);
+    this.password = hash;
 
     next();
 });

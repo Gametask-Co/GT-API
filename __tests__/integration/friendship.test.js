@@ -9,7 +9,7 @@ describe('User', () => {
                 name: 'Friend Test Valerror',
                 email: 'friend_valerror@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'friend1valerror'
+                password: 'friend1valerror'
             });
 
         const user2 = await request(app)
@@ -18,7 +18,7 @@ describe('User', () => {
                 name: 'Friend Test 2 valerror',
                 email: 'friend2_valerror@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'friend2valerror'
+                password: 'friend2valerror'
             });
 
         const response = await request(app)
@@ -31,14 +31,14 @@ describe('User', () => {
         expect(response.body).toEqual({ message: 'Validation error' });
     });
 
-    it('should give friend not found', async () => {
+    it('should give User not found', async () => {
         const user1 = await request(app)
             .post('/user')
             .send({
                 name: 'Friend Test 404',
                 email: 'friend404@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'friend1404'
+                password: 'friend1404'
             });
 
         const response = await request(app)
@@ -48,7 +48,7 @@ describe('User', () => {
                 id: '5e533d45b8511c3e7aefa666'
             });
 
-        expect(response.body).toEqual({ message: 'Friend not found' });
+        expect(response.body).toEqual({ message: 'User not found' });
     });
 
     it('should create friend1, friend2 and add them to friendlist', async () => {
@@ -58,7 +58,7 @@ describe('User', () => {
                 name: 'Friend Test',
                 email: 'friend1@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'friend1'
+                password: 'friend1'
             });
 
         const user2 = await request(app)
@@ -67,7 +67,7 @@ describe('User', () => {
                 name: 'Friend Test 2',
                 email: 'friend2@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'friend2'
+                password: 'friend2'
             });
 
         const response = await request(app)
@@ -120,26 +120,16 @@ describe('User', () => {
             flag2 = true;
 
         Object.keys(user1_af.body.user.friend_list).forEach(function(key) {
-            if (
-                user1_af.body.user.friend_list[key].friend_id ==
-                user2.body.user._id
-            )
-                flag1 = false;
+            if (user1_af.body.user.friend_list[key].friend_id == user2.body.user._id) flag1 = false;
         });
 
-        if (user1_af.body.user.friend_list.includes(user2.body.user._id))
-            flag1 = false;
+        if (user1_af.body.user.friend_list.includes(user2.body.user._id)) flag1 = false;
 
         Object.keys(user2_af.body.user.friend_list).forEach(function(key) {
-            if (
-                user2_af.body.user.friend_list[key].friend_id ==
-                user1.body.user._id
-            )
-                flag2 = false;
+            if (user2_af.body.user.friend_list[key].friend_id == user1.body.user._id) flag2 = false;
         });
 
-        if (user2_af.body.user.friend_list.includes(user1.body.user._id))
-            flag2 = false;
+        if (user2_af.body.user.friend_list.includes(user1.body.user._id)) flag2 = false;
 
         expect(response.body).toEqual({ message: 'Succefully operation' });
         expect(flag1 && flag2).toBeTruthy();
@@ -195,7 +185,7 @@ describe('User', () => {
         expect(response.body).toEqual({ message: 'Validation error' });
     });
 
-    it('should receive friend not found while deleting', async () => {
+    it('should receive User not found while deleting', async () => {
         const user1 = await request(app)
             .post('/user/auth')
             .send({
@@ -210,7 +200,7 @@ describe('User', () => {
                 id: '5e533d45b8511c3e7aefa666'
             });
 
-        expect(response.body).toEqual({ message: 'Friend not found' });
+        expect(response.body).toEqual({ message: 'User not found' });
     });
 
     it('should receive not friends while deleting', async () => {
