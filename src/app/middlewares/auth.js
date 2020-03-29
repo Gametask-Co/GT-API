@@ -6,13 +6,11 @@ dotenv.config();
 export default (req, res, next) => {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader)
-        return res.status(401).send({ error: 'No token provided' });
+    if (!authHeader) return res.status(401).send({ error: 'No token provided' });
 
     const parts = authHeader.split(' ');
 
-    if (!parts.length === 2)
-        return res.status(401).send({ error: 'Token error' });
+    if (!parts.length === 2) return res.status(401).send({ error: 'Token error' });
 
     const [scheme, token] = parts;
 
@@ -23,7 +21,7 @@ export default (req, res, next) => {
     jwt.verify(token, process.env.SECRET, (err, decoded) => {
         if (err) return res.status(401).send({ error: 'Invalid token' });
 
-        req.userId = decoded.id;
+        req.user_id = decoded.id;
         return next();
     });
 };

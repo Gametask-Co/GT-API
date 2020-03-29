@@ -9,7 +9,7 @@ describe('Auth', () => {
                 name: 'test gametask auth',
                 email: 'gametaskauth@gametask.com',
                 birthday: '10/11/1995',
-                password_hash: 'test123'
+                password: 'test123'
             });
 
         expect(response.body).toHaveProperty('token');
