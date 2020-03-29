@@ -48,13 +48,13 @@ class TodoController {
 
     async index(req, res) {
         const schema = Yup.object().shape({
-            _id: Yup.string().required()
+            id: Yup.string().required()
         });
 
-        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(req.body._id))
+        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(req.body.id))
             return res.status(400).send({ message: 'Validation error' });
 
-        const todo = await Todo.findById(req.body._id);
+        const todo = await Todo.findById(req.body.id);
 
         if (!todo) return res.status(400).send({ message: 'Todo not found' });
 
@@ -87,13 +87,13 @@ class TodoController {
 
     async delete(req, res) {
         const schema = Yup.object().shape({
-            _id: Yup.string().required()
+            id: Yup.string().required()
         });
 
-        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(_id))
+        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(id))
             return res.status(400).send({ message: 'Validation error' });
 
-        const todo = Todo.findById(req.body._id);
+        const todo = Todo.findById(req.body.id);
 
         // verificar com a lista da task
 

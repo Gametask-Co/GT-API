@@ -9,17 +9,10 @@ function isValidMongoDbID(str) {
 }
 
 function taskExist(task_list, task_id) {
-    let flag = false;
-
-    Object.keys(task_list).forEach(function(key) {
-        if (task_list[key]._id == task_id) {
-            flag = true;
-        }
-    });
-
-    return flag;
+    return task_list.includes(task_id);
 }
 
+// criar controller novo para score
 function taskScore(task) {
     let point = task.todo_list.length * 10;
 
@@ -102,24 +95,24 @@ class TaskController {
 
     async update(req, res) {
         const schema = Yup.object().shape({
-            _id: Yup.string().required(),
+            id: Yup.string().required(),
             name: Yup.string().notRequired(),
             description: Yup.string().notRequired(),
             due_date: Yup.date().notRequired(),
             active: Yup.boolean().notRequired()
         });
 
-        const { _id, name, description, due_date, active } = req.body;
+        const { id, name, description, due_date, active } = req.body;
 
-        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(_id))
+        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(id))
             return res.status(400).send({ message: 'Validation error' });
 
         const user = await User.findById(req.user_id);
         let tasks = user.tasks;
 
-        if (!taskExist(tasks, _id)) return res.status(400).send({ message: 'Task not found' });
+        if (!taskExist(tasks, id)) return res.status(400).send({ message: 'Task not found' });
 
-        const task = await Task.findById(req.body._id);
+        const task = await Task.findById(req.body.id);
         if (name != undefined) task.name = name;
 
         if (description != undefined) task.description = description;
@@ -137,20 +130,20 @@ class TaskController {
 
     async todo_list(req, res) {
         const schema = Yup.object().shape({
-            _id: Yup.string().required()
+            id: Yup.string().required()
         });
 
-        const { _id } = req.body;
+        const { id } = req.body;
 
-        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(_id))
+        if (!(await schema.isValid(req.body)) || !isValidMongoDbID(id))
             return res.status(400).send({ message: 'Validation error' });
 
         const user = await User.findById(req.user_id);
         let tasks = user.tasks;
 
-        if (!taskExist(tasks, _id)) return res.status(400).send({ message: 'Task not found' });
+        if (!taskExist(tasks, id)) return res.status(400).send({ message: 'Task not found' });
 
-        const task = await Task.findById(_id);
+        const task = await Task.findById(id);
         return res.send(task.todo_list);
     }
 }

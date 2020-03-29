@@ -104,7 +104,7 @@ describe('Todo', () => {
             .get('/todo/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
-                _id: todo.body._id
+                id: todo.body._id
             });
 
         expect(response.body._id).toEqual(todo.body._id);

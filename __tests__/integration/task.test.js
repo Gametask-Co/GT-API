@@ -63,10 +63,10 @@ describe('Task', () => {
             .get('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
-                task_id: task.body._id
+                task_id: task.body.id
             });
 
-        expect(task_new.body._id).toEqual(task.body._id);
+        expect(task_new.body.id).toEqual(task.body.id);
     });
 
     let old_task_id;
@@ -170,7 +170,7 @@ describe('Task', () => {
             .put('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
-                id: old_task.body._id + '666'
+                id: old_task.body.id + '666'
             });
 
         expect(response.body).toEqual({ message: 'Validation error' });
@@ -204,7 +204,7 @@ describe('Task', () => {
             .put('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
-                _id: old_task.body._id,
+                id: old_task.body._id,
                 name: 'New name',
                 description: 'New description'
             });
@@ -233,7 +233,7 @@ describe('Task', () => {
             .put('/task/')
             .set('Authorization', 'Bearer ' + user.body.token)
             .send({
-                _id: old_task.body._id,
+                id: old_task.body._id,
                 name: 'New name',
                 description: 'New description'
             });
