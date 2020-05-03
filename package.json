@@ -1,32 +1,32 @@
 {
-    "name": "GT-API",
-    "version": "1.0.0",
-    "main": "index.js",
-    "repository": "https://github.com/Gametask-Inc/GT-API",
-    "scripts": {
-        "start": "npm install && npm run-script deploy",
-        "deploy": "sucrase-node src/server.js",
-        "dev": "nodemon src/server.js",
-        "pretest": "NODE_ENV=test",
-        "test": "NODE_ENV=test jest --detectOpenHandles"
-    },
-    "license": "MIT",
-    "dependencies": {
-        "bcryptjs": "^2.4.3",
-        "cors": "^2.8.5",
-        "dotenv": "^8.2.0",
-        "express": "^4.17.1",
-        "jsonwebtoken": "^8.5.1",
-        "mongoose": "^5.9.1",
-        "yup": "^0.28.1"
-    },
-    "devDependencies": {
-        "@sucrase/jest-plugin": "^2.0.0",
-        "@types/jest": "^25.1.2",
-        "jest": "^25.1.0",
-        "mongodb-memory-server": "^6.2.4",
-        "nodemon": "^2.0.2",
-        "sucrase": "^3.12.1",
-        "supertest": "^4.0.2"
-    }
+  "name": "GT-API",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Gametask-Inc/GT-API",
+  "scripts": {
+    "start": "npm install && npm run-script deploy",
+    "deploy": "sucrase-node src/server.js",
+    "dev": "nodemon src/server.js",
+    "pretest": "NODE_ENV=test",
+    "test": "NODE_ENV=test jest --detectOpenHandles"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.1",
+    "yup": "^0.28.1"
+  },
+  "devDependencies": {
+    "@sucrase/jest-plugin": "^2.0.0",
+    "@types/jest": "^25.1.2",
+    "jest": "^25.1.0",
+    "mongodb-memory-server": "^6.2.4",
+    "nodemon": "^2.0.2",
+    "sucrase": "^3.12.1",
+    "supertest": "^4.0.2"
+  }
 }
