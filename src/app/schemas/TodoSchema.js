@@ -1,20 +1,19 @@
-import { Schema, Mongoose } from 'mongoose';
-import bcrypt from 'bcryptjs';
+import { Schema } from 'mongoose';
 
 const TodoSchema = new Schema({
-    name: {
-        type: String,
-        require: true
-    },
+  name: {
+    type: String,
+    require: true,
+  },
 
-    description: {
-        type: String,
-    },
+  description: {
+    type: String,
+  },
 
-    task: {
-        type: Schema.Types.ObjectId,
-        ref: 'Task'
-    }
+  task: {
+    type: Schema.Types.ObjectId,
+    ref: 'Task',
+  },
 });
 
 export default TodoSchema;

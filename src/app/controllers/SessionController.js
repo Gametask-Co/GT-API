@@ -16,19 +16,22 @@ class SessionController {
       password: Yup.string().required(),
     });
 
-    if (!(await schema.isValid(req.body))) return res.status(400).send({ message: 'Validation error' });
+    if (!(await schema.isValid(req.body)))
+      return res.status(400).send({ message: 'Validation error' });
 
     const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password');
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).send({ message: 'User not found or Invalid password' });
+      return res
+        .status(401)
+        .send({ message: 'User not found or Invalid password' });
     }
 
     user.password = undefined;
 
-    res.send({
+    return res.send({
       user,
       token: generateToken({ id: user.id }),
     });

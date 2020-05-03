@@ -1,27 +1,29 @@
 import jwt from 'jsonwebtoken';
 
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export default (req, res, next) => {
-    const authHeader = req.headers.authorization;
+  const authHeader = req.headers.authorization;
 
-    if (!authHeader) return res.status(401).send({ error: 'No token provided' });
+  if (!authHeader) return res.status(401).send({ error: 'No token provided' });
 
-    const parts = authHeader.split(' ');
+  const parts = authHeader.split(' ');
 
-    if (!parts.length === 2) return res.status(401).send({ error: 'Token error' });
+  if (!parts.length === 2)
+    return res.status(401).send({ error: 'Token error' });
 
-    const [scheme, token] = parts;
+  const [scheme, token] = parts;
 
-    if (!/^Bearer$/i.test(scheme)) {
-        return res.status(401).send({ error: 'Token malformatted' });
-    }
+  if (!/^Bearer$/i.test(scheme)) {
+    return res.status(401).send({ error: 'Token malformatted' });
+  }
 
-    jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if (err) return res.status(401).send({ error: 'Invalid token' });
+  jwt.verify(token, process.env.SECRET, (err, decoded) => {
+    if (err) return res.status(401).send({ error: 'Invalid token' });
 
-        req.user_id = decoded.id;
-        return next();
-    });
+    req.user_id = decoded.id;
+    return next();
+  });
 };

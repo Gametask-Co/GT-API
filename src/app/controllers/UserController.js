@@ -22,9 +22,11 @@ class UserController {
       password: Yup.string().required().min(6),
     });
 
-    if (!(await schema.isValid(req.body))) return res.status(400).send({ message: 'Validation error' });
+    if (!(await schema.isValid(req.body)))
+      return res.status(400).send({ message: 'Validation error' });
 
-    if (new Date(req.body.birthday) >= Date.now()) return res.status(400).send({ message: 'Invalid birthday' });
+    if (new Date(req.body.birthday) >= Date.now())
+      return res.status(400).send({ message: 'Invalid birthday' });
 
     const { email } = req.body;
     const userExists = await User.findOne({ email });
@@ -61,7 +63,8 @@ class UserController {
     if (email != user.email) {
       const userExists = await User.findOne({ email });
 
-      if (userExists) return res.status(400).send({ message: 'Email already taken' });
+      if (userExists)
+        return res.status(400).send({ message: 'Email already taken' });
     }
 
     if (oldPassword && !(await bcrypt.compare(oldPassword, user.password)))

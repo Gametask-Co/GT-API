@@ -61,7 +61,7 @@ routes.delete('/todo/', authMiddleware, TodoController.delete);
 routes.put('/todo/', authMiddleware, TodoController.update);
 
 // rota principal ( Em breve )
-routes.get('/', function (req, res) {
+routes.get('/', (req, res) => {
   res.sendFile('views/index.html', { root: __dirname });
 });
 

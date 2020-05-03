@@ -1,12 +1,12 @@
-import "./bootstrap";
+import './bootstrap';
 
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
 
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import routes from "./routes";
+import routes from './routes';
 
 class App {
   constructor() {
@@ -18,23 +18,23 @@ class App {
   }
 
   async database() {
-    if (process.env.NODE_ENV == "test") {
+    if (process.env.NODE_ENV == 'test') {
       const mongod = new MongoMemoryServer();
       const uri = await mongod.getUri();
       mongoose.connect(uri, {
         useNewUrlParser: true,
-        useUnifiedTopology: true
+        useUnifiedTopology: true,
       });
     } else {
       mongoose
         .connect(process.env.DB_CONNECTION, {
           useNewUrlParser: true,
-          useUnifiedTopology: true
+          useUnifiedTopology: true,
         })
         .then(() => {
-          console.log("Successfully connected with database...");
+          console.log('Successfully connected with database...');
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(`Mongoose connection error: ${err}`);
           process.exit(1);
         });
@@ -46,7 +46,7 @@ class App {
     this.server.use(
       cors({
         origin: process.env.FRONT_URL,
-        optionsSucessStatus: 200
+        optionsSucessStatus: 200,
       })
     );
   }
