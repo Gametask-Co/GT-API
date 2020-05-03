@@ -8,13 +8,10 @@ function isValidMongoDbID(str) {
 }
 
 function setFriend(f1, f2) {
-  let f1_friend_list = f1.friend_list,
-    f2_friend_list = f2.friend_list;
+  f1.friend_list.push({ friend_id: f2.id });
+  f2.friend_list.push({ friend_id: f1.id });
 
-  f1_friend_list.push({ friend_id: f2.id });
-  f2_friend_list.push({ friend_id: f1.id });
-
-  return { f1: f1_friend_list, f2: f2_friend_list };
+  return { f1: f1.friend_list, f2: f2.friend_list };
 }
 
 function checkFriendship(f1, f2) {

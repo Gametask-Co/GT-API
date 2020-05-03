@@ -26,8 +26,8 @@ class TodoController {
     });
 
     const user = await User.findById(req.user_id);
-    const tasks = user.tasks;
-    const task_id = req.body.task_id;
+    const { tasks } = user;
+    const { task_id } = req.body;
 
     if (!(await schema.isValid(req.body)) || !isValidMongoDbID(task_id))
       return res.status(400).send({ message: 'Validation error' });
@@ -36,7 +36,7 @@ class TodoController {
       return res.status(400).send({ message: 'Task not found' });
 
     const task = await Task.findById(task_id);
-    let todo_list = task.todo_list;
+    const { todo_list } = task;
 
     const todo = await Todo.create(req.body);
     todo_list.push(todo);
@@ -69,10 +69,12 @@ class TodoController {
       description: Yup.string(),
     });
 
+    const { todo_id } = req.body;
+
     if (!(await schema.isValid(req.body)) || !isValidMongoDbID(todo_id))
       return res.status(400).send({ message: 'Validation error' });
 
-    const todo = Todo.findById(req.body.todo_id);
+    const todo = Todo.findById(todo_id);
 
     // verificar com lista da task
     if (!todo) return res.status(400).send({ message: 'Todo not found' });
@@ -82,9 +84,9 @@ class TodoController {
     if (req.body.description != undefined)
       todo.description = req.body.description;
 
-    const todo_updated = todo.updateOne(todo);
+    const todo_updated = await todo.updateOne(todo);
 
-    return res.send(todo_update);
+    return res.send(todo_updated);
   }
 
   async delete(req, res) {
@@ -105,7 +107,7 @@ class TodoController {
       res.status(400).send({ message: 'Not able to delete' });
     }
 
-    res.send({ message: 'Successfully delete' });
+    return res.send({ message: 'Successfully delete' });
   }
 }
 
