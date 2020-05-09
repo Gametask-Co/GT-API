@@ -12,19 +12,6 @@ function taskExist(task_list, task_id) {
   return task_list.includes(task_id);
 }
 
-// criar controller novo para score
-function taskScore(task) {
-  let point = task.todo_list.length * 10;
-
-  if (point > 100) point = 100;
-  // state?
-  if (Date.now > task.due_date) point *= 0.25;
-
-  const user = User.findById(task.user_id);
-  user.exp += point;
-  user.updateOne(user);
-}
-
 class TaskController {
   async store(req, res) {
     const schema = Yup.object().shape({
@@ -125,10 +112,7 @@ class TaskController {
 
     if (due_date !== undefined) task.due_date = due_date;
 
-    if (active !== undefined && active != task.active) {
-      task.active = active;
-      // taskScore(task);
-    }
+    if (active !== undefined && active != task.active) task.active = active;
 
     await task.updateOne(task);
     return res.send(task);
