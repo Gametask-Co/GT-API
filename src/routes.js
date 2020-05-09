@@ -1,13 +1,19 @@
 import { Router } from 'express';
 
+import authMiddleware from './app/middlewares/auth';
+
 import UserController from './app/controllers/UserController';
 import FriendshipController from './app/controllers/FriendshipController';
 import TaskController from './app/controllers/TaskController';
 import TodoController from './app/controllers/TodoController';
-
-import authMiddleware from './app/middlewares/auth';
+import SessionController from './app/controllers/SessionController';
+import ScoreController from './app/controllers/ScoreController';
 
 const routes = new Router();
+
+// -------- AUTH ROUTES --------
+
+routes.post('/user/auth/', SessionController.auth);
 
 // -------- USER ROUTES --------
 
@@ -16,7 +22,6 @@ routes.get('/user/', authMiddleware, UserController.index);
 
 // POST
 routes.post('/user/', UserController.store);
-routes.post('/user/auth/', UserController.auth);
 
 // PUT
 routes.put('/user/', authMiddleware, UserController.update);
@@ -56,9 +61,13 @@ routes.get('/todo/', authMiddleware, TodoController.index);
 routes.delete('/todo/', authMiddleware, TodoController.delete);
 routes.put('/todo/', authMiddleware, TodoController.update);
 
+// -------- SCORE ROUTES --------
+
+routes.post('/score/', authMiddleware, ScoreController.store);
+
 // rota principal ( Em breve )
-routes.get('/', function(req, res) {
-    res.sendFile('views/index.html', { root: __dirname });
+routes.get('/', (req, res) => {
+  res.sendFile('views/index.html', { root: __dirname });
 });
 
 export default routes;
