@@ -127,7 +127,7 @@ class TaskController {
 
     if (active !== undefined && active != task.active) {
       task.active = active;
-      taskScore(task);
+      // taskScore(task);
     }
 
     await task.updateOne(task);

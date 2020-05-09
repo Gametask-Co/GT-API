@@ -1,12 +1,13 @@
 import { Router } from 'express';
 
+import authMiddleware from './app/middlewares/auth';
+
 import UserController from './app/controllers/UserController';
 import FriendshipController from './app/controllers/FriendshipController';
 import TaskController from './app/controllers/TaskController';
 import TodoController from './app/controllers/TodoController';
-
-import authMiddleware from './app/middlewares/auth';
 import SessionController from './app/controllers/SessionController';
+import ScoreController from './app/controllers/ScoreController';
 
 const routes = new Router();
 
@@ -59,6 +60,10 @@ routes.post('/todo/', authMiddleware, TodoController.store);
 routes.get('/todo/', authMiddleware, TodoController.index);
 routes.delete('/todo/', authMiddleware, TodoController.delete);
 routes.put('/todo/', authMiddleware, TodoController.update);
+
+// -------- SCORE ROUTES --------
+
+routes.post('/score/', authMiddleware, ScoreController.store);
 
 // rota principal ( Em breve )
 routes.get('/', (req, res) => {
