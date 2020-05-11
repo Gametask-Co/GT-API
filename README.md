@@ -1,6 +1,6 @@
 # Gametask API
 
-API of Gametask platform
+Gametask platform API
 
 ## Version
 
