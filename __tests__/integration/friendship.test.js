@@ -2,7 +2,6 @@ import request from 'supertest';
 import app from '../../src/app';
 
 import factory from '../util/factories';
-import auth from '../../src/app/middlewares/auth';
 
 describe('User', () => {
   describe('/POST', () => {

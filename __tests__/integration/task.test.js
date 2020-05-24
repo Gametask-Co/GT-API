@@ -1,231 +1,215 @@
 import request from 'supertest';
 import app from '../../src/app';
 
+import factory from '../util/factories';
+
 describe('Task', () => {
-  it('should create a new task for a user', async () => {
-    const user = await request(app).post('/user/').send({
-      name: 'Task Test',
-      email: 'tasktest@gametask.com',
-      birthday: '10/09/2005',
-      password: 'taskaccount',
+  describe('/POST', () => {
+    it('should create a new task for a user', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      const response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      expect(response.body).toHaveProperty(
+        'name',
+        'description',
+        'user_id',
+        'createdAt'
+      );
     });
 
-    const response = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Task Example',
-        description: 'Task Description Example',
-        due_date: '01/01/2005',
-      });
+    it('should receive validation error', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-    expect(response.body).toHaveProperty(
-      'name',
-      'description',
-      'user_id',
-      'createdAt'
-    );
+      const response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          namee: 'testes',
+        });
+
+      expect(response.body).toEqual({ message: 'Validation error' });
+    });
   });
 
-  it('should receive validation error', async () => {
-    const user = await request(app).post('/user/auth/').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
+  describe('/GET', () => {
+    it('should receive single task', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      const task_new = await request(app)
+        .get('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body.id,
+        });
+
+      expect(task_new.body.id).toEqual(task_response.body.id);
     });
-
-    const response = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        namee: 'testes',
-      });
-
-    expect(response.body).toEqual({ message: 'Validation error' });
   });
 
-  it('should receive single task', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
+  describe('/DELETE', () => {
+    it('should receive task not found while trying to delete task', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      await request(app)
+        .delete('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
+
+      const response = await request(app)
+        .delete('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
+
+      expect(response.body).toEqual({ message: 'Task not found' });
     });
 
-    const task = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Task Example',
-        description: 'Task Description Example',
-        due_date: '01/01/2005',
-      });
+    it('should receive task validation error', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-    let task_new = await request(app)
-      .get('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: task.body.id,
-      });
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
 
-    expect(task_new.body.id).toEqual(task.body.id);
+      const response = await request(app)
+        .delete('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id + '0000',
+        });
+
+      expect(response.body).toEqual({ message: 'Validation error' });
+    });
+
+    it('should delete task', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      const user_before = await request(app)
+        .get('/user/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`);
+
+      await request(app)
+        .delete('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
+
+      const user_after = await request(app)
+        .get('/user/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`);
+
+      const list_before = user_before.body.user.tasks;
+      const list_after = user_after.body.user.tasks;
+
+      expect(list_before.includes(task_response.body._id)).toBeTruthy;
+      expect(list_after.includes(task_response.body._id)).toBeFalsy;
+    });
   });
 
-  let old_task_id;
+  describe('/PUT', () => {
+    it('should receive validation error', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-  it('should delete task', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      const response = await request(app)
+        .put('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          id: task_response.body.id + '666',
+        });
+
+      expect(response.body).toEqual({ message: 'Validation error' });
     });
 
-    await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Task Example',
-        description: 'Task Description Example',
-        due_date: '01/01/2005',
-      });
+    it('should receive Task not found', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-    const r_user = await request(app)
-      .get('/user/')
-      .set('Authorization', `Bearer ${user.body.token}`);
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
 
-    let task_list = r_user.body.user.tasks;
-    const task_id = task_list[0];
-    old_task_id = task_id;
+      await request(app)
+        .delete('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
 
-    await request(app)
-      .delete('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: task_id,
-      });
+      const new_task = await factory.attrs('Task');
+      new_task.id = task_response.body._id;
 
-    let response = await request(app)
-      .get('/user/')
-      .set('Authorization', `Bearer ${user.body.token}`);
+      const response = await request(app)
+        .put('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(new_task);
 
-    let task_list_new = response.body.user.tasks;
-
-    expect(task_list.length > task_list_new.length ? true : false).toBeTruthy();
-    expect(task_list_new.includes(task_id)).toBeFalsy;
-  });
-
-  it('should receive task not found while trying to delete task', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
+      expect(response.body).toEqual({ message: 'Task not found' });
     });
 
-    const response = await request(app)
-      .delete('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: old_task_id,
-      });
+    it('should receive updated task', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-    expect(response.body).toEqual({ message: 'Task not found' });
-  });
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
 
-  it('should receive task validation error', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
+      const new_task = await factory.attrs('Task');
+      new_task.id = task_response.body._id;
+
+      const response = await request(app)
+        .put('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(new_task);
+
+      expect(response.body.name).toEqual(new_task.name);
+      expect(response.body.description).toEqual(new_task.description);
     });
-
-    const response = await request(app)
-      .delete('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: old_task_id + '0000',
-      });
-
-    expect(response.body).toEqual({ message: 'Validation error' });
-  });
-
-  it('should receive validation error', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
-    });
-
-    const old_task = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Test update task',
-        description: 'Test update task',
-        due_date: '10/10/2025',
-      });
-
-    const response = await request(app)
-      .put('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        id: old_task.body.id + '666',
-      });
-
-    expect(response.body).toEqual({ message: 'Validation error' });
-  });
-
-  it('should receive Task not found', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
-    });
-
-    const old_task = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Test update task',
-        description: 'Test update task',
-        due_date: '10/10/2025',
-      });
-
-    await request(app)
-      .delete('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: old_task.body._id,
-      });
-
-    const response = await request(app)
-      .put('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        id: old_task.body._id,
-        name: 'New name',
-        description: 'New description',
-      });
-
-    expect(response.body).toEqual({ message: 'Task not found' });
-  });
-
-  it('should receive updated task', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'tasktest@gametask.com',
-      password: 'taskaccount',
-    });
-
-    const old_task = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Test update task',
-        description: 'Test update task',
-        due_date: '10/10/2025',
-      });
-
-    const response = await request(app)
-      .put('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        id: old_task.body._id,
-        name: 'New name',
-        description: 'New description',
-      });
-
-    expect(response.body.name).toEqual('New name');
-    expect(response.body.description).toEqual('New description');
   });
 });
