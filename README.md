@@ -1,6 +1,8 @@
-# Gametask API
+# Gametask API 
 
 Gametask platform API
+
+![Node.js CI](https://github.com/Gametask-Co/GT-API/workflows/Node.js%20CI/badge.svg?branch=master)
 
 ## Version
 
