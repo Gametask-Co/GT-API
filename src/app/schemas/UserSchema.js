@@ -2,6 +2,11 @@ import { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const UserSchema = new Schema({
+  avatar: {
+    type: String,
+    default: null,
+  },
+
   name: {
     type: String,
     require: true,
