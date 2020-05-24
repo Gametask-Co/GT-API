@@ -25,4 +25,7 @@ jobs:
       - name: Install
         run: npm install
       - name: Test
+        env:
+          SECRET: ${{ secrets.SECRET }}
+          FRONT_URL: ${{ secrets.FRONT_URL }}
         run: npm test
