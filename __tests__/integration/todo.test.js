@@ -1,194 +1,242 @@
 import request from 'supertest';
 import app from '../../src/app';
 
+import factory from '../util/factories';
+
 describe('Todo', () => {
-  it('should receive validation error', async () => {
-    const user = await request(app).post('/user/').send({
-      name: 'Test Todo',
-      email: 'testtodo@gametask.com',
-      birthday: '10/29/1995',
-      password: 'testtodo',
+  describe('/POST', () => {
+    it('should receive validation error', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      const todo = await factory.attrs('Todo');
+      const response = await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
+
+      expect(response.body).toEqual({ message: 'Validation error' });
     });
 
-    const task = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Task Example',
-        description: 'Task Description Example',
-        due_date: '01/01/2025',
-      });
+    it('should receive task not found', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-    const response = await request(app)
-      .post('/todo/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: task.body._id,
-        nameee: 'Test Todo 1',
-        describe: 'Test Todo Describe Example',
-      });
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
 
-    expect(response.body).toEqual({ message: 'Validation error' });
-  });
+      await request(app)
+        .delete('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
 
-  it('should create a task and todo in it', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'testtodo@gametask.com',
-      password: 'testtodo',
+      const todo = await factory.attrs('Todo');
+      todo.task_id = task_response.body._id;
+
+      const response = await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
+
+      expect(response.body).toEqual({ message: 'Task not found' });
     });
 
-    const task = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Task Example',
-        description: 'Task Description Example',
-        due_date: '01/01/2025',
-      });
+    it('should create new todo', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-    const task_id = task.body._id;
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
 
-    const response = await request(app)
-      .post('/todo/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: task_id,
-        name: 'Test Todo 1',
-        description: 'Test Todo Describe Example',
-      });
+      const todo = await factory.attrs('Todo');
+      todo.task_id = task_response.body._id;
+      const response = await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
 
-    const task_new = await request(app)
-      .get('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: task_id,
-      });
-
-    expect(response.body).toHaveProperty('_id', 'name', 'description');
-    expect(task_new.body.todo_list.includes(response.body._id)).toBeTruthy();
-  });
-
-  it('should receive single todo', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'testtodo@gametask.com',
-      password: 'testtodo',
+      expect(response.body).toHaveProperty('description', 'name', '_id');
     });
 
-    const task = await request(app)
-      .post('/task/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'Task Example',
-        description: 'Task Description Example',
-        due_date: '01/01/2025',
+    it('should create todo and be in users task list', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      const todo = await factory.attrs('Todo');
+      todo.task_id = task_response.body._id;
+      const todo_response = await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
+
+      const response = await request(app)
+        .get('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
+
+      const todo_list = response.body.todo_list.filter((e) => {
+        return e == todo_response.body._id;
       });
 
-    const task_id = task.body._id;
-
-    const todo = await request(app)
-      .post('/todo/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: task_id,
-        name: 'Test Todo 1',
-        description: 'Test Todo Describe Example',
-      });
-
-    const response = await request(app)
-      .get('/todo/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        id: todo.body._id,
-      });
-
-    expect(response.body._id).toEqual(todo.body._id);
+      expect(todo_list).toHaveLength(1);
+    });
   });
 
-  it('should receive validation error', async () => {
-    const user = await request(app).post('/user/auth').send({
-      email: 'testtodo@gametask.com',
-      password: 'testtodo',
+  describe('/GET', () => {
+    it('should receive validation error', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      const todo = await factory.attrs('Todo');
+      todo.task_id = task_response.body._id;
+      await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
+
+      const response = await request(app)
+        .get('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send();
+      expect(response.body).toEqual({ message: 'Validation error' });
     });
 
-    const task = await request(app)
-      .post('/task/')
-      .set('authorization', `Bearer ${user.body.token}`)
-      .send({
-        name: 'task example',
-        description: 'task description example',
-        due_date: '01/01/2025',
-      });
+    it('should receive todo not found after deleting task', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-    const task_id = task.body._id;
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
 
-    const todo = await request(app)
-      .post('/todo/')
-      .set('authorization', `Bearer ${user.body.token}`)
-      .send({
-        task_id: task_id,
-        name: 'test todo 1',
-        description: 'test todo describe example',
-      });
+      const todo = await factory.attrs('Todo');
+      todo.task_id = task_response.body._id;
+      const todo_response = await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
 
-    const response = await request(app)
-      .get('/todo/')
-      .set('Authorization', `Bearer ${user.body.token}`)
-      .send({
-        todo_id: todo.body._id + '666',
-      });
+      await request(app)
+        .delete('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
 
-    expect(response.body).toEqual({ message: 'Validation error' });
+      const response = await request(app)
+        .get('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({ id: todo_response.body._id });
+
+      expect(response.body).toEqual({ message: 'Todo not found' });
+    });
+
+    it('should receive todo information', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
+
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
+
+      const todo = await factory.attrs('Todo');
+      todo.task_id = task_response.body._id;
+      const todo_response = await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
+
+      const response = await request(app)
+        .get('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({ id: todo_response.body._id });
+
+      expect(response.body).toHaveProperty('name', 'description', 'task');
+    });
   });
 
-  let todo_id_deleted;
+  describe('/DELETE', () => {
+    it('should delete a todo and todo not be in tasks todo_list', async () => {
+      const user = await factory.attrs('User');
+      const auth_response = await request(app).post('/user').send(user);
 
-  /*it('should delete a todo', async () => {
-        const user = await request(app)
-            .post('/user/auth')
-            .send({
-                email: 'testtodo@gametask.com',
-                password: 'testtodo'
-            });
+      const task = await factory.attrs('Task');
+      const task_response = await request(app)
+        .post('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(task);
 
-        const task = await request(app)
-            .post('/task/')
-            .set('authorization', `Bearer ${user.body.token}`)
-            .send({
-                name: 'task example',
-                description: 'task description example',
-                due_date: '01/01/2025'
-            });
+      const todo = await factory.attrs('Todo');
+      todo.task_id = task_response.body._id;
+      const todo_response = await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
 
-        const task_id = task.body._id;
+      await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
 
-        const todo = await request(app)
-            .post('/todo/')
-            .set('authorization', `Bearer ${user.body.token}`)
-            .send({
-                task_id: task_id,
-                name: 'test todo 1',
-                description: 'test todo describe example'
-            });
+      await request(app)
+        .post('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send(todo);
 
-        const todo_id = todo.body._id;
-        todo_id_deleted = todo_id;
+      const response = await request(app)
+        .delete('/todo/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          id: todo_response.body._id,
+        });
 
-        const response = await request(app)
-            .delete('/todo/')
-            .set('authorization', `Bearer ${user.body.token}`)
-            .send({
-                task_id: task_id,
-                todo_id: todo_id
-            });
+      const task_after = await request(app)
+        .get('/task/')
+        .set('Authorization', `Bearer ${auth_response.body.token}`)
+        .send({
+          task_id: task_response.body._id,
+        });
 
-        const not_found = await request(app)
-            .get('/todo/')
-            .set('authorization', `Bearer ${user.body.token}`)
-            .send({
-                todo_id: todo_id
-            });
+      const todo_list_after = task_after.body.todo_list.filter((e) => {
+        return e == todo_response.body._id;
+      });
 
-        expect(response.body).toEqual({ message: 'Successfully delete' });
-        expect(not_found.body).toEqual({ message: 'Todo not found' });
-    };*/
+      expect(response.body).toEqual({ message: 'Successfully delete' });
+      expect(todo_list_after).toHaveLength(0);
+    });
+  });
+
+  describe('/PUT', () => {});
 });

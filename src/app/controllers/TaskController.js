@@ -2,6 +2,7 @@ import * as Yup from 'yup';
 
 import User from '../models/User';
 import Task from '../models/Task';
+import Todo from '../models/Todo';
 
 function isValidMongoDbID(str) {
   const checkForValidMongoDbID = new RegExp('^[0-9a-fA-F]{24}$');
@@ -74,15 +75,25 @@ class TaskController {
     if (!taskExist(tasks, task_id))
       return res.status(400).send({ message: 'Task not found' });
 
-    tasks = tasks.filter((id) => {
-      return id != task_id;
-    });
+    try {
+      tasks = tasks.filter((id) => {
+        return id != task_id;
+      });
 
-    user.tasks = tasks;
+      user.tasks = tasks;
+      await user.updateOne(user);
 
-    await user.updateOne(user);
+      const { todo_list } = await Task.findById(task_id);
+      todo_list.map(async (e) => {
+        await Todo.findByIdAndDelete(e);
+      });
 
-    return res.send(user);
+      await Task.findByIdAndDelete(task_id);
+
+      return res.send({ message: 'Successfully delete' });
+    } catch (err) {
+      return res.send(500).send({ message: 'Internal Error' });
+    }
   }
 
   async update(req, res) {

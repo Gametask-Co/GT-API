@@ -10,7 +10,7 @@ const TodoSchema = new Schema({
     type: String,
   },
 
-  task: {
+  task_id: {
     type: Schema.Types.ObjectId,
     ref: 'Task',
   },

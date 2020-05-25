@@ -94,20 +94,27 @@ class TodoController {
       id: Yup.string().required(),
     });
 
+    const { id } = req.body;
+
     if (!(await schema.isValid(req.body)) || !isValidMongoDbID(id))
       return res.status(400).send({ message: 'Validation error' });
 
-    const todo = Todo.findById(req.body.id);
-
-    // verificar com a lista da task
-
     try {
-      await todo.delete();
-    } catch (err) {
-      res.status(400).send({ message: 'Not able to delete' });
-    }
+      const todo = await Todo.findById(id);
 
-    return res.send({ message: 'Successfully delete' });
+      const task = await Task.findById(todo.task_id);
+      const { todo_list } = task;
+      task.todo_list = todo_list.filter((todo_id) => {
+        return todo_id != id;
+      });
+
+      await task.updateOne(task);
+      await todo.delete();
+
+      return res.send({ message: 'Successfully delete' });
+    } catch (err) {
+      return res.status(500).send({ message: 'Not able to delete' });
+    }
   }
 }
 

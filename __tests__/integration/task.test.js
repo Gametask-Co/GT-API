@@ -102,7 +102,7 @@ describe('Task', () => {
         .delete('/task/')
         .set('Authorization', `Bearer ${auth_response.body.token}`)
         .send({
-          task_id: task_response.body._id + '0000',
+          task_id: `${task_response.body._id}0000`,
         });
 
       expect(response.body).toEqual({ message: 'Validation error' });
@@ -133,11 +133,16 @@ describe('Task', () => {
         .get('/user/')
         .set('Authorization', `Bearer ${auth_response.body.token}`);
 
-      const list_before = user_before.body.user.tasks;
-      const list_after = user_after.body.user.tasks;
+      const list_before = user_before.body.user.tasks.filter((e) => {
+        return e == task_response.body._id;
+      });
 
-      expect(list_before.includes(task_response.body._id)).toBeTruthy;
-      expect(list_after.includes(task_response.body._id)).toBeFalsy;
+      const list_after = user_after.body.user.tasks.filter((e) => {
+        return e == task_response.body._id;
+      });
+
+      expect(list_before).toHaveLength(1);
+      expect(list_after).toHaveLength(0);
     });
   });
 
@@ -156,7 +161,7 @@ describe('Task', () => {
         .put('/task/')
         .set('Authorization', `Bearer ${auth_response.body.token}`)
         .send({
-          id: task_response.body.id + '666',
+          id: `${task_response.body.id}666`,
         });
 
       expect(response.body).toEqual({ message: 'Validation error' });
